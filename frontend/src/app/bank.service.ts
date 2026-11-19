@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // >>> CHANGE THIS ONE LINE to your Render URL (keep /api at the end, no trailing slash) <<<
-const API_BASE = 'https://YOUR-APP-NAME.onrender.com/api';
+const API_BASE = 'https://smartbank-api-ywc7.onrender.com/api';
 
 export interface Txn { type: string; amount: number; time: string; }
 
