@@ -1,0 +1,4 @@
+body { font-family: Arial, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+input, button { padding: 8px; margin: 4px 4px 4px 0; }
+table { border-collapse: collapse; margin-top: 12px; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }

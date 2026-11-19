@@ -1,0 +1,7 @@
+[build]
+  base    = "frontend"
+  command = "npm install && npm run build"
+  publish = "dist/smartbank-ui/browser"
+
+[build.environment]
+  NODE_VERSION = "20"
