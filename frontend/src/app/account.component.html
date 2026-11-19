@@ -1,0 +1,119 @@
+<header class="top">
+  <div class="brand"><span class="mark" aria-hidden="true"></span>SmartBank</div>
+  <p class="sub">Java REST API with an Angular front end</p>
+</header>
+
+<main class="wrap">
+
+  <!-- Before an account is open -->
+  <ng-container *ngIf="!acc; else dashboard">
+    <section class="welcome">
+      <h1>Open an account, then move some money.</h1>
+      <p class="lead">
+        This is a working demo. Every deposit and withdrawal is saved by a Java and JDBC
+        backend, and the passbook is read back from the database.
+      </p>
+      <button class="btn big" type="button" (click)="openAccount()" [disabled]="busy">
+        {{ busy ? 'Opening account...' : 'Open a new account' }}
+      </button>
+      <p class="hint" *ngIf="busy">The free server can take up to 30 seconds to wake up.</p>
+
+      <form class="existing" (ngSubmit)="useExisting()">
+        <label for="existing">Already have an account number?</label>
+        <div class="row">
+          <input id="existing" name="existing" [(ngModel)]="accInput" placeholder="SB123456" autocomplete="off" />
+          <button class="btn ghost" type="submit" [disabled]="!accInput.trim() || busy">Open account</button>
+        </div>
+      </form>
+      <p class="note">The demo database resets when the server restarts, so older account numbers may stop working.</p>
+    </section>
+  </ng-container>
+
+  <!-- Account dashboard -->
+  <ng-template #dashboard>
+    <div class="grid">
+
+      <section class="left">
+        <article class="card" aria-label="Account summary">
+          <div class="card-top">
+            <span class="chip" aria-hidden="true"></span>
+            <span class="card-brand">SmartBank</span>
+          </div>
+          <p class="label">Available balance</p>
+          <p class="balance"><span class="cur">₹</span>{{ shownBalance | number:'1.2-2' }}</p>
+          <div class="card-bottom">
+            <div>
+              <p class="label">Account number</p>
+              <p class="accno">{{ prettyAcc }}</p>
+            </div>
+            <button class="icon-btn" type="button" (click)="copy()">{{ copied ? 'Copied' : 'Copy number' }}</button>
+          </div>
+        </article>
+        <button class="link" type="button" (click)="switchAccount()">Use a different account</button>
+
+        <form class="panel move" (ngSubmit)="submit()">
+          <div class="seg" role="radiogroup" aria-label="Transaction type">
+            <button type="button" role="radio" [attr.aria-checked]="mode === 'DEPOSIT'"
+                    [class.on]="mode === 'DEPOSIT'" (click)="setMode('DEPOSIT')">Deposit</button>
+            <button type="button" role="radio" [attr.aria-checked]="mode === 'WITHDRAW'"
+                    [class.on]="mode === 'WITHDRAW'" (click)="setMode('WITHDRAW')">Withdraw</button>
+          </div>
+
+          <label for="amt">Amount</label>
+          <div class="amt">
+            <span>₹</span>
+            <input id="amt" name="amt" type="number" min="1" inputmode="decimal"
+                   [(ngModel)]="amount" placeholder="0" />
+          </div>
+          <div class="chips">
+            <button type="button" *ngFor="let c of chips" (click)="amount = c">₹{{ c | number }}</button>
+          </div>
+
+          <button class="btn primary" [class.neg]="mode === 'WITHDRAW'" type="submit" [disabled]="!canSubmit">
+            {{ submitLabel }}
+          </button>
+        </form>
+      </section>
+
+      <section class="panel book" aria-label="Passbook">
+        <div class="book-head">
+          <h2>Passbook</h2>
+          <div class="filters" role="group" aria-label="Filter transactions">
+            <button type="button" [class.on]="filter === 'ALL'" (click)="filter = 'ALL'">All</button>
+            <button type="button" [class.on]="filter === 'DEPOSIT'" (click)="filter = 'DEPOSIT'">Money in</button>
+            <button type="button" [class.on]="filter === 'WITHDRAW'" (click)="filter = 'WITHDRAW'">Money out</button>
+          </div>
+        </div>
+
+        <div class="sums">
+          <div><span>Total in</span><strong class="pos">+₹{{ totalIn | number:'1.2-2' }}</strong></div>
+          <div><span>Total out</span><strong class="neg">−₹{{ totalOut | number:'1.2-2' }}</strong></div>
+        </div>
+
+        <ul class="rows" *ngIf="filtered.length; else empty">
+          <li class="row" *ngFor="let t of filtered"
+              [class.pos]="t.type === 'DEPOSIT'" [class.neg]="t.type === 'WITHDRAW'">
+            <span class="dir" aria-hidden="true">{{ t.type === 'DEPOSIT' ? '↓' : '↑' }}</span>
+            <div class="meta">
+              <strong>{{ t.type === 'DEPOSIT' ? 'Deposit' : 'Withdrawal' }}</strong>
+              <span>{{ when(t) | date:'d MMM y, h:mm a' }}</span>
+            </div>
+            <span class="val">{{ t.type === 'DEPOSIT' ? '+' : '−' }}₹{{ t.amount | number:'1.2-2' }}</span>
+          </li>
+        </ul>
+        <ng-template #empty>
+          <div class="empty">
+            <p *ngIf="loading">Loading your passbook...</p>
+            <ng-container *ngIf="!loading">
+              <p><strong>{{ history.length ? 'Nothing matches this filter.' : 'No transactions yet.' }}</strong></p>
+              <p>{{ history.length ? 'Choose All to see everything.' : 'Make a deposit and it will appear here.' }}</p>
+            </ng-container>
+          </div>
+        </ng-template>
+      </section>
+
+    </div>
+  </ng-template>
+</main>
+
+<div class="toast" *ngIf="toast" [class.err]="toast.kind === 'err'" role="status">{{ toast.text }}</div>
